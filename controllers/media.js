@@ -3,6 +3,8 @@ const cloudinary = require('cloudinary')
 const fs = require('fs')
 const {Users} = require('../models')
 
+
+//upload local storage
 const storage = multer.diskStorage({
     destination: function(req,file,callback){
         callback(null, './uploads')
@@ -15,7 +17,7 @@ const storage = multer.diskStorage({
 const upload = multer ({storage: storage})
 const uploads = upload.single('photos')
 
-//cloudinary
+//cloudinary (exsternal storage)
 cloudinary.config({
     cloud_name: 'dpij7jkkd',
     api_key: '887179886757483',
@@ -38,7 +40,7 @@ const uploadFile = async (req,res)=>{
     
     const url = await uploadCloudinary(req.file.path)
     if (url){
-        const curent = req.user
+        // const curent = req.user
         // return res.json({
         //     id:curent.id,
         //     email: curent.email
@@ -47,16 +49,16 @@ const uploadFile = async (req,res)=>{
             photoProfile: url,
         },
         {
-            where:{ email : curent.email }
+            where:{ email : req.user.email }
         })
         return res.json({
-            email : curent.email,
+            
             message: 'upload berhasil',
             url:url,
         })
     } else {
         return res.json({
-            email: curent.email,
+          
             message: 'upload gagal',
         })
     }

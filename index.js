@@ -1,9 +1,11 @@
 const express = require('express')
+const socketio = require('socket.io')
 const app = express()
 const { sequelize } = require('./models')
 const passport = require ('./lib/passport')
 const session = require ('express-session')
 const multer = require('multer')
+const { Server } = require('engine.io')
 
 
 app.use(express.json())
@@ -25,24 +27,38 @@ app.set ('view engine', 'ejs')
 app.use(require("./router/user"))
 
 
-const connectDb = async ()=>{
-    console.log('Checking database connection...')
+const connectDb = async () => {
+    console.log('Checking database connection...');
     try {
-        await sequelize.authenticate()
-        console.log('Database connection established.')
+      await sequelize.authenticate();
+      console.log('Database connection established.');
     } catch (e) {
-        console.log('Database connection failed', e)
-        process.exit(1)
+      console.log('Database connection failed', e);
+      process.exit(1);
     }
-}
+  };
+    
+  const server = app.listen(4000, () => {
+    console.log("Server running at http://localhost:4000");
+  });
+  
+  const io = socketio(server);
+  
+  io.on('connection', (socket) => {
+    console.log('a user connected');
+  
+    socket.on('chat message', (msg) => {
+      io.emit('new chat', msg);
+    });
+  
+    socket.on('disconnect', () => {
+      console.log('user disconnected');
+    });
+  });
+  
+connectDb();
+  
 
-(async ()=> {
-    await connectDb()
-    app.listen(4000, () => {
-        console.log("Server running at http://localhost:4000");
-      });
-
-})()
-
+  
 
 

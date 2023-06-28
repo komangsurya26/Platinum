@@ -19,10 +19,10 @@ router
     
     .get('/siapaSaya',restrict, ctrl.siapaSaya)
 
-    .post('/uploadProfile', media.uploads,(req,res)=>{
+    .post('/uploadToInternal', media.uploads,(req,res)=>{
         res.send(req.files)
     })
 
-    .post('/uploadMedia',restrict, media.uploads, media.uploadFile)
-
+    .post('/uploadToExternal',restrict, media.uploads ,media.uploadFile)
+    
 module.exports = router    

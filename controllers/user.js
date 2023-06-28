@@ -1,109 +1,53 @@
 const { Users } = require ('../models')
 const { where } = require('sequelize')
 const bcrypt = require ('bcrypt')
-const e = require('express')
-const passport = require('passport')
 const jwt = require('jsonwebtoken')
 const rahasia = 'ini rahasia'
-
-//LOCAL STRATEGY TOKEN
-// exports.register = async (req,res,next) => {
-//     try {
-//         const register = {
-//             firstName: req.body.firstName,
-//             lastName: req.body.lastName,
-//             email: req.body.email,
-//             password: req.body.password,
-//         };
-//     const cek = await Users.findOne({ where: { email: register.email}})
-//     if (cek) {
-//         throw new Error("email sudah ada");
-//     }
-//     if (!register.email || !register.password || !register.firstName || !register.lastName ) {
-//         throw new Error("masukan data dengan benar");
-//     }
-//     const enc = bcrypt.hashSync(register.password,10)
-    
-//     Users.create({
-//         firstName: register.firstName,
-//         lastName: register.lastName,
-//         email: register.email,
-//         password: enc
-//     })
-//        .then(r => {
-//         console.log(r)
-//         return res.render('login')
-//        })
-//     } catch (error) {
-//         console.error(error)
-//         return res.json({succes: false , error: error.message, 
-//         message:'terjadi kesalahan saat register'})
-//     }
-// }
-
-// exports.loginPage = (req,res)=>{
-//     let message =''
-//     if (req.session.messages){
-//         message=req.session.messages[0]
-//         req.session.message=[]
-//     }
-//     return res.render('login',{message:message})
-// }
-
-// exports.login = passport.authenticate('local',{
-//     successRedirect: '/',
-//     failureRedirect: '/login',
-//     failureMessage: true,
-// })
 
 
 //JWT token
 exports.register = async (req,res,next) => {
     try {
-        const register = {
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            email: req.body.email,
-            password: req.body.password,
-        };
-    const cek = await Users.findOne({ where: { email: register.email}})
+        const { firstName,lastName,email,password } = req.body
+
+    const cek = await Users.findOne({ where: { email: email}})
     if (cek) {
         throw new Error("email sudah ada");
     }
-    if (!register.email || !register.password || !register.firstName || !register.lastName ) {
+    if (!email || !password || !firstName || !lastName ) {
         throw new Error("masukan data dengan benar");
     }
-    const enc = bcrypt.hashSync(register.password,10)
+    const enc = bcrypt.hashSync(password,10)
     
     Users.create({
-        firstName: register.firstName,
-        lastName: register.lastName,
-        email: register.email,
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
         password: enc
     })
        .then(r => {
         console.log(r)
-        return res.render('login')
+        return res.status(200).json("register sukses!!")
        })
     } catch (error) {
-        console.error(error)
-        return res.json({succes: false , error: error.message, 
-        message:'terjadi kesalahan saat register'})
+        return res.status(500).json({succes: false , error: error.message })
     }
 }
 
 exports.login = async (req,res) =>{
     try {
-        const email = req.body.email
-        const password = req.body.password
-
-        const checkEmail = await Users.findOne({where:{email:email}})
-        if(!checkEmail){
-            return res.render('login',{error:'email tidak ada'})
+        const login = {
+            email :req.body.email,
+            password :req.body.password
         }
-        const resultLogin = bcrypt.compareSync(password, checkEmail.password)
+        const checkEmail = await Users.findOne({where:{email:login.email}})
+        if(!checkEmail){
+            return res.status(400).json('email tidak ada')
+        }
+
+        const resultLogin = bcrypt.compareSync(login.password, checkEmail.password)
         if(!resultLogin){
-            return res.render('login',{error:'password salah'})
+            return res.status(400).json('password salah')
         } 
 
         //token
@@ -129,6 +73,10 @@ exports.siapaSaya = (req,res)=>{
         email: curent.email
     })
 }
+
+
+  
+  
 
 
 
